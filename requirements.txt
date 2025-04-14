@@ -1,0 +1,10 @@
+psycopg2-binary
+sqlalchemy
+scikit-learn
+xgboost
+matplotlib
+mplfinance
+python-telegram-bot==20.3
+apscheduler
+pydantic
+python-dotenv
