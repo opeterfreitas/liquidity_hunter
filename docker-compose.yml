@@ -1,29 +1,35 @@
-version: '3.9'
+version: "3.8"
 
 services:
-  app:
-    build: .
-    container_name: liquidity_hunter
-    volumes:
-      - .:/app
-    working_dir: /app
-    env_file:
-      - .env
-    depends_on:
-      - db
-    command: tail -f /dev/null  # para debug inicial
-
-  db:
+  postgres:
     image: postgres:14
     container_name: liquidity_db
     environment:
-      POSTGRES_DB: hunter
-      POSTGRES_USER: hunter_user
-      POSTGRES_PASSWORD: hunter_pass
+      POSTGRES_USER: liquidity
+      POSTGRES_PASSWORD: liquiditypass
+      POSTGRES_DB: liquidity
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U liquidity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  hunter:
+    build: .
+    container_name: liquidity_hunter
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    command: ["python", "main.py"]
 
 volumes:
   pgdata:
